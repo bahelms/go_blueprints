@@ -11,6 +11,8 @@ import (
 	"sync"
 	"text/template"
 
+	"github.com/stretchr/signature"
+
 	"github.com/bahelms/go_blueprints/chat/trace"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"
@@ -39,10 +41,9 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type config struct {
-	SecurityKey    string `yaml:"security_key"`
 	GoogleID       string `yaml:"googleID"`
 	GoogleKey      string `yaml:"googleKey"`
-	GoogleCallback string `yaml:"goggleCallback"`
+	GoogleCallback string `yaml:"googleCallbackURL"`
 }
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 	fmt.Printf("config: %v\n", conf)
-	gomniauth.SetSecurityKey(conf.SecurityKey)
+	gomniauth.SetSecurityKey(signature.RandomKey(64))
 	gomniauth.WithProviders(
 		google.New(conf.GoogleID, conf.GoogleKey, conf.GoogleCallback),
 	)
