@@ -20,15 +20,17 @@ type room struct {
 	leave   chan *client     // clients wanting to leave room
 	clients map[*client]bool // currently joined clients
 	tracer  trace.Tracer     // receives info from activity in the room
+	avatar  Avatar           // how avatar info will be obtained
 }
 
-func newRoom() *room {
+func newRoom(avatar Avatar) *room {
 	return &room{
 		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
 		tracer:  trace.Off(),
+		avatar:  avatar,
 	}
 }
 
