@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -57,7 +56,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	fmt.Printf("config: %v\n", conf)
 	gomniauth.SetSecurityKey(signature.RandomKey(64))
 	gomniauth.WithProviders(
 		google.New(conf.GoogleID, conf.GoogleKey, conf.GoogleCallback),
@@ -70,6 +68,16 @@ func main() {
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:   "auth",
+			Value:  "",
+			Path:   "/",
+			MaxAge: -1,
+		})
+		w.Header().Set("Location", "/chat")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	})
 
 	go r.run() // start room
 

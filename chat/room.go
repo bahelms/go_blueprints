@@ -46,7 +46,6 @@ func (r *room) run() {
 			r.tracer.Trace("Message received: ", msg.Message)
 			for client := range r.clients {
 				client.send <- msg
-				r.tracer.Trace(" -- sent to client")
 			}
 		}
 	}
