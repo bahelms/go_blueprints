@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -82,6 +84,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			"name":       user.Name(),
 			"avatar_url": user.AvatarURL(),
 			"email":      user.Email(),
+			"user_id":    hashUserID(user.Email()),
 		}).MustBase64()
 
 		http.SetCookie(w, &http.Cookie{
@@ -96,4 +99,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Auth action %s not supported", action)
 	}
+}
+
+func hashUserID(email string) string {
+	m := md5.New()
+	io.WriteString(m, strings.ToLower(email))
+	return fmt.Sprintf("%x", m.Sum(nil))
 }

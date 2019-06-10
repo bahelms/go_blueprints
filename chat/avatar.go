@@ -1,11 +1,7 @@
 package main
 
 import (
-	"crypto/md5"
 	"errors"
-	"fmt"
-	"io"
-	"strings"
 )
 
 // ErrNoAvatarURL is the error that is returned when the Avatar instance
@@ -47,19 +43,17 @@ type GravatarAvatar struct{}
 // UseGravatar implementation
 var UseGravatar GravatarAvatar
 
-const gravatarBaseURL = "//www.gravatar.com/avatar"
+const gravatarBaseURL = "//www.gravatar.com/avatar/"
 
 // GetAvatarURL stuff
 func (GravatarAvatar) GetAvatarURL(c *client) (string, error) {
-	email, ok := c.userData["email"]
+	id, ok := c.userData["user_id"]
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
-	emailStr, ok := email.(string)
+	idStr, ok := id.(string)
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
-	m := md5.New()
-	io.WriteString(m, strings.ToLower(emailStr))
-	return fmt.Sprintf(gravatarBaseURL+"/%x", m.Sum(nil)), nil
+	return gravatarBaseURL + idStr, nil
 }
