@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
+	"path"
 )
 
 // ErrNoAvatarURL is the error that is returned when the Avatar instance
@@ -56,4 +58,36 @@ func (GravatarAvatar) GetAvatarURL(c *client) (string, error) {
 		return "", ErrNoAvatarURL
 	}
 	return gravatarBaseURL + idStr, nil
+}
+
+// FileSystemAvatar  stuff
+type FileSystemAvatar struct{}
+
+// UseFileSystemAvatar  implementation
+var UseFileSystemAvatar FileSystemAvatar
+
+// GetAvatarURL stuff
+func (FileSystemAvatar) GetAvatarURL(c *client) (string, error) {
+	id, ok := c.userData["user_id"]
+	if !ok {
+		return "", ErrNoAvatarURL
+	}
+	idStr, ok := id.(string)
+	if !ok {
+		return "", ErrNoAvatarURL
+	}
+
+	files, err := ioutil.ReadDir("avatars")
+	if err != nil {
+		return "", ErrNoAvatarURL
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if match, _ := path.Match(idStr+"*", file.Name()); match {
+			return "/avatars/" + file.Name(), nil
+		}
+	}
+	return "", ErrNoAvatarURL
 }

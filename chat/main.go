@@ -61,7 +61,7 @@ func main() {
 		google.New(conf.GoogleID, conf.GoogleKey, conf.GoogleCallback),
 	)
 
-	r := newRoom(UseGravatar)
+	r := newRoom(UseFileSystemAvatar)
 	r.tracer = trace.New(os.Stdout)
 
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
@@ -80,6 +80,7 @@ func main() {
 	})
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploaderHandler)
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
 
 	go r.run() // start room
 
