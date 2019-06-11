@@ -7,10 +7,11 @@ import (
 )
 
 type client struct {
-	socket   *websocket.Conn
-	send     chan *message // channel on which messages are sent
-	room     *room
-	userData map[string]interface{}
+	socket    *websocket.Conn
+	send      chan *message // channel on which messages are sent
+	room      *room
+	avatarURL string
+	userData  map[string]interface{}
 }
 
 func (c *client) read() {
@@ -22,7 +23,7 @@ func (c *client) read() {
 		}
 		msg.When = time.Now()
 		msg.Name = c.userData["name"].(string)
-		msg.AvatarURL, _ = c.room.avatar.GetAvatarURL(c)
+		msg.AvatarURL = c.avatarURL
 		c.room.forward <- &msg
 	}
 }

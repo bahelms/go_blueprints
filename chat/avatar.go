@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path"
 )
@@ -10,6 +11,8 @@ import (
 // is unable to provide a URL
 var ErrNoAvatarURL = errors.New("chat: Unable to get an avatar URL")
 
+type userData map[string]interface{}
+
 // Avatar represents types capable of representing user profile pictures
 type Avatar interface {
 	// GetAvatarURL gets the avatar URL for the specified client, or returns
@@ -17,7 +20,20 @@ type Avatar interface {
 	//
 	// ErrNoAvatarURL is returned if the object is unable to get a URL for
 	// the specified client.
-	GetAvatarURL(c *client) (string, error)
+	GetAvatarURL(c userData) (string, error)
+}
+
+// TryAvatars is a slice of Avatar implementations to try
+type TryAvatars []Avatar
+
+// GetAvatarURL returns the URL for the first avatar that does not error
+func (a TryAvatars) GetAvatarURL(data userData) (string, error) {
+	for _, avatar := range a {
+		if url, err := avatar.GetAvatarURL(data); err == nil {
+			return url, nil
+		}
+	}
+	return "", ErrNoAvatarURL
 }
 
 // AuthAvatar stuff
@@ -27,8 +43,8 @@ type AuthAvatar struct{}
 var UseAuthAvatar AuthAvatar
 
 // GetAvatarURL stuff
-func (AuthAvatar) GetAvatarURL(c *client) (string, error) {
-	url, ok := c.userData["avatar_url"]
+func (AuthAvatar) GetAvatarURL(data userData) (string, error) {
+	url, ok := data["avatar_url"]
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
@@ -48,8 +64,8 @@ var UseGravatar GravatarAvatar
 const gravatarBaseURL = "//www.gravatar.com/avatar/"
 
 // GetAvatarURL stuff
-func (GravatarAvatar) GetAvatarURL(c *client) (string, error) {
-	id, ok := c.userData["user_id"]
+func (GravatarAvatar) GetAvatarURL(data userData) (string, error) {
+	id, ok := data["user_id"]
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
@@ -67,8 +83,9 @@ type FileSystemAvatar struct{}
 var UseFileSystemAvatar FileSystemAvatar
 
 // GetAvatarURL stuff
-func (FileSystemAvatar) GetAvatarURL(c *client) (string, error) {
-	id, ok := c.userData["user_id"]
+func (FileSystemAvatar) GetAvatarURL(data userData) (string, error) {
+	fmt.Println("Getting FileSystem Avatar")
+	id, ok := data["user_id"]
 	if !ok {
 		return "", ErrNoAvatarURL
 	}

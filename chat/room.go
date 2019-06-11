@@ -70,11 +70,14 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Fatal("Failed to get auth cookie:", err)
 	}
 
+	data := userData(objx.MustFromBase64(authCookie.Value))
+	avatarURL, _ := r.avatar.GetAvatarURL(data)
 	client := &client{
-		socket:   socket,
-		send:     make(chan *message, messageBufferSize),
-		room:     r,
-		userData: objx.MustFromBase64(authCookie.Value),
+		socket:    socket,
+		send:      make(chan *message, messageBufferSize),
+		room:      r,
+		avatarURL: avatarURL,
+		userData:  data,
 	}
 
 	r.join <- client
