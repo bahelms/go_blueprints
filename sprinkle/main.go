@@ -17,7 +17,7 @@ func loadTransforms() (string, []string) {
 		log.Fatal(err)
 	}
 	transforms := strings.Split(string(contents), "\n")
-	return transforms[0], transforms[1:]
+	return transforms[0], transforms
 }
 
 func main() {
