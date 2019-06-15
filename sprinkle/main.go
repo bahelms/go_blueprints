@@ -12,7 +12,7 @@ import (
 )
 
 func loadTransforms() (string, []string) {
-	contents, err := ioutil.ReadFile("transforms.txt")
+	contents, err := ioutil.ReadFile("../sprinkle/transforms.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
